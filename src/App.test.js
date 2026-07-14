@@ -1,8 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+// The app boots the LD provider asynchronously; in test/offline mode it falls
+// back to the local bootstrap and should render the sidebar brand.
+test('renders the LaunchDarkly demo shell', async () => {
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>
+  );
+  await waitFor(
+    () => expect(screen.getByText(/LaunchDarkly/i)).toBeInTheDocument(),
+    { timeout: 5000 }
+  );
 });

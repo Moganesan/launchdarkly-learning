@@ -7,8 +7,10 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "launchdarkly-react-client-sdk": "^3.9.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
+    "react-router-dom": "^6.30.4",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -16,7 +18,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "ld:seed": "node scripts/api/seed.mjs",
+    "ld:flags": "node scripts/api/flags.mjs",
+    "ld:server": "node scripts/server/evaluate.mjs",
+    "ld:ai": "node scripts/ai/generate.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -35,5 +41,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@launchdarkly/node-server-sdk": "^9.12.1",
+    "dotenv": "^17.4.2",
+    "launchdarkly-api-typescript": "^23.0.0"
   }
 }
