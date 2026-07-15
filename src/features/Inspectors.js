@@ -5,7 +5,7 @@
 // ('flag-detail-changed'), identity changes, and client init. This page
 // subscribes to the shared inspectorLog that ldProvider.js feeds.
 import React, { useEffect, useState } from 'react';
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
+import { useFlags, useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Button, Badge } from '../components/ui';
 import { inspectorLog } from '../lib/ldProvider';
 
@@ -20,8 +20,8 @@ export default function Inspectors() {
 
   // Touch a flag to generate a 'flag-used' inspector callback.
   function evaluate() {
-    ldClient?.variation('release-banner', false);
-    ldClient?.variation('theme-color', '#000');
+    ldClient?.boolVariation('release-banner', false);
+    ldClient?.stringVariation('theme-color', '#000');
   }
 
   return (
@@ -61,9 +61,8 @@ export default function Inspectors() {
       </Panel>
 
       <Panel title="How inspectors are registered">
-        <Code>{`asyncWithLDProvider({
-  clientSideID, context,
-  options: {
+        <Code>{`createLDReactProvider(clientSideID, context, {
+  ldOptions: {
     inspectors: [
       { type: 'flag-used', name: 'my-eval-logger',
         method: (flagKey, detail) => log(flagKey, detail.value) },

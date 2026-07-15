@@ -1,7 +1,7 @@
 // SDK → Features → Context configuration, Anonymous contexts, Private
 // attributes, and Identifying/changing contexts.
 import React, { useState } from 'react';
-import { useLDClient } from 'launchdarkly-react-client-sdk';
+import { useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Value, Button, Badge } from '../components/ui';
 import {
   userContext,

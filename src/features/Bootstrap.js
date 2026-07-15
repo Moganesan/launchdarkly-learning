@@ -37,19 +37,18 @@ export default function Bootstrap() {
       <Panel title="Three bootstrap modes">
         <Code>{`// 1. Object bootstrap — best for SSR. The server evaluates flags and
 //    injects them, so the browser's first paint uses real values.
-asyncWithLDProvider({
-  clientSideID, context,
-  options: { bootstrap: window.__LD_BOOTSTRAP__ },
+//    In v4, bootstrap is a TOP-LEVEL provider option:
+createLDReactProvider(clientSideID, context, {
+  bootstrap: window.__LD_BOOTSTRAP__,
 });
 
 // 2. localStorage — cache the last-known flags across page loads.
-asyncWithLDProvider({
-  clientSideID, context,
-  options: { bootstrap: 'localStorage' },
+createLDReactProvider(clientSideID, context, {
+  bootstrap: 'localStorage',
 });
 
 // 3. No bootstrap — SDK fetches on init (brief default-value window).
-asyncWithLDProvider({ clientSideID, context });`}</Code>
+createLDReactProvider(clientSideID, context);`}</Code>
       </Panel>
 
       <Panel title="Server → client handoff (SSR)">

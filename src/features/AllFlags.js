@@ -5,7 +5,7 @@
 // SDKs. This page also demonstrates allFlagsState-style JSON you can pass to a
 // browser SDK's bootstrap option.
 import React from 'react';
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
+import { useFlags, useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Button } from '../components/ui';
 
 export default function AllFlags() {
@@ -37,8 +37,8 @@ const all = ldClient.allFlags();
 const state = await ldClient.allFlagsState(context, { clientSideOnly: true });
 res.send(renderPage({ bootstrap: state.toJSON() }));
 
-// Then in the browser:
-asyncWithLDProvider({ clientSideID, context, options: { bootstrap } });`}</Code>
+// Then in the browser (v4):
+createLDReactProvider(clientSideID, context, { bootstrap });`}</Code>
       </Panel>
     </Page>
   );

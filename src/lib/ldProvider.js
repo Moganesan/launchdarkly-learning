@@ -1,20 +1,22 @@
-// LaunchDarkly provider bootstrap.
+// LaunchDarkly provider bootstrap — v4 (@launchdarkly/react-sdk).
 //
-// This wires up the `launchdarkly-react-client-sdk` (v3) using the async
-// initializer so the app can `await` a ready client before first render. It
-// demonstrates a large slice of client-side SDK *configuration*:
-//   - streaming vs polling
-//   - event sending / flushing
-//   - bootstrapping
-//   - private attributes (set on the context, see contexts.js)
-//   - inspectors (flag-used / flag-changed hooks)
-//   - evaluation reasons (needed for the "evaluation details" hooks)
-//   - offline mode fallback when no client-side ID is configured
+// v4 replaces v3's async `asyncWithLDProvider` with the SYNCHRONOUS factory
+// `createLDReactProvider(clientSideID, context, options)`. Initialization state
+// is surfaced through the `useInitializationStatus()` hook instead of awaiting
+// the provider.
+//
+// v4 option placement (different from v3!):
+//   - client tuning (sendEvents, withReasons, inspectors, logger, private
+//     attributes) → options.ldOptions   (LDReactClientOptions extends LDOptions)
+//   - flag-key camelCasing               → options.ldOptions.useCamelCaseFlagKeys
+//   - initial flag values                → options.bootstrap  (top-level)
+//   - streaming is the default connection mode; there is no `streaming: true`
+//     boolean. Offline is achieved by bootstrapping + not sending events.
 //
 // Docs: SDK → Client-side → React → React Web SDK; SDK → Features → SDK
 // configuration / Inspectors / Bootstrapping.
 
-import { asyncWithLDProvider } from 'launchdarkly-react-client-sdk';
+import { createLDReactProvider } from '@launchdarkly/react-sdk';
 import { LD_CLIENT_ID, IS_OFFLINE, OFFLINE_BOOTSTRAP } from './config';
 import { userContext } from './contexts';
 
@@ -33,8 +35,7 @@ export const inspectorLog = {
 };
 
 // Inspectors let you observe SDK internals without patching the client.
-// There are several inspector kinds; here we register a flag-used inspector and
-// a flag-details-changed inspector. (Docs: SDK → Features → Inspectors.)
+// (Docs: SDK → Features → Inspectors.)
 const inspectors = [
   {
     type: 'flag-used',
@@ -62,56 +63,6 @@ const inspectors = [
   },
 ];
 
-// Build the React provider component. Returns a Promise<Component>.
-export async function buildLDProvider() {
-  // OFFLINE MODE — no network. We hand the SDK a bootstrap map so every flag
-  // resolves to a known value and the whole UI is demonstrable with no account.
-  if (IS_OFFLINE) {
-    return asyncWithLDProvider({
-      clientSideID: 'offline-demo',
-      context: userContext,
-      options: {
-        // Bootstrapping with an object skips the initial network fetch.
-        bootstrap: OFFLINE_BOOTSTRAP,
-        // Don't attempt to reach LaunchDarkly in offline mode.
-        streaming: false,
-        sendEvents: false,
-        // Still run inspectors so the Inspectors page works offline.
-        inspectors,
-        logger: consoleLogger(),
-      },
-      // Keep flag keys as-is (kebab-case) OR camelCase them. Default true.
-      reactOptions: { useCamelCaseFlagKeys: true },
-    });
-  }
-
-  // LIVE MODE — connect to LaunchDarkly with a real client-side ID.
-  return asyncWithLDProvider({
-    clientSideID: LD_CLIENT_ID,
-    context: userContext,
-    options: {
-      // Real-time flag updates over a streaming connection (SSE).
-      streaming: true,
-      // Send analytics + evaluation events (required for experimentation).
-      sendEvents: true,
-      // Ask the SDK to include evaluation reasons so *Detail hooks work.
-      evaluationReasons: true,
-      // Bootstrap from localStorage so repeat visits render instantly and
-      // survive brief offline periods. 'localStorage' is a built-in mode.
-      bootstrap: 'localStorage',
-      // Observe evaluations + changes in the UI.
-      inspectors,
-      logger: consoleLogger(),
-      // How long to wait for init before resolving with cached/default values.
-      // (Set via waitForInitialization on the client; provider awaits ready.)
-    },
-    reactOptions: { useCamelCaseFlagKeys: true },
-    // Defer identify so the initial render uses the provided context; the app's
-    // ContextSwitcher can call ldClient.identify() later.
-    timeout: 5,
-  });
-}
-
 // A minimal logger matching the SDK's LDLogger shape. Demonstrates
 // SDK → Features → Logging configuration.
 function consoleLogger() {
@@ -124,3 +75,31 @@ function consoleLogger() {
   }
   return out;
 }
+
+// Build the React provider component (v4 factory is synchronous).
+export function buildLDProvider() {
+  // Client tuning shared by both modes. In offline mode we don't send events;
+  // bootstrap (below) supplies the flag values so no network is needed.
+  const ldOptions = {
+    sendEvents: !IS_OFFLINE, // analytics + evaluation events (for experimentation)
+    withReasons: true, // include evaluation reasons — powers *VariationDetail
+    inspectors, // observe evaluations + changes in the UI
+    logger: consoleLogger(),
+    // Keep flag keys camelCased (release-banner → releaseBanner).
+    useCamelCaseFlagKeys: true,
+  };
+
+  return createLDReactProvider(
+    IS_OFFLINE ? 'offline-demo' : LD_CLIENT_ID,
+    userContext,
+    {
+      ldOptions,
+      // Top-level bootstrap: an object seeds every flag (offline mock); in live
+      // mode we let the SDK fetch/stream, so no bootstrap object is passed.
+      ...(IS_OFFLINE ? { bootstrap: OFFLINE_BOOTSTRAP } : {}),
+    },
+  );
+}
+
+// The v4 provider is created once, synchronously, at module load.
+export const LDProvider = buildLDProvider();

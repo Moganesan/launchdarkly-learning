@@ -4,7 +4,7 @@
 // current context. These events feed LaunchDarkly metrics used by
 // experimentation and guarded rollouts.
 import React, { useState } from 'react';
-import { useLDClient } from 'launchdarkly-react-client-sdk';
+import { useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Button } from '../components/ui';
 import { IS_OFFLINE } from '../lib/config';
 

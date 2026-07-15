@@ -1,7 +1,7 @@
 // SDK → Features → Monitoring SDK status, Offline mode, Shutting down,
 // Data saving mode, Secure mode.
 import React, { useEffect, useState } from 'react';
-import { useLDClient } from 'launchdarkly-react-client-sdk';
+import { useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Value, Code, Badge } from '../components/ui';
 import { IS_OFFLINE } from '../lib/config';
 
@@ -65,9 +65,9 @@ await ldClient.close();`}</Code>
 
       <Panel title="Offline mode">
         <p>Client-side offline is achieved by bootstrapping and disabling network:</p>
-        <Code>{`asyncWithLDProvider({
-  clientSideID, context,
-  options: { bootstrap: knownFlags, streaming: false, sendEvents: false },
+        <Code>{`createLDReactProvider(clientSideID, context, {
+  bootstrap: knownFlags,                 // top-level: seed known values
+  ldOptions: { sendEvents: false },       // don't phone home
 });
 // Server-side SDKs expose an explicit \`offline: true\` option.`}</Code>
       </Panel>
@@ -80,8 +80,8 @@ await ldClient.close();`}</Code>
         </p>
         <Code>{`// server (Node):
 const hash = ldClient.secureModeHash(context);
-// browser:
-asyncWithLDProvider({ clientSideID, context, options: { hash } });`}</Code>
+// browser (v4):
+createLDReactProvider(clientSideID, context, { ldOptions: { hash } });`}</Code>
       </Panel>
     </Page>
   );

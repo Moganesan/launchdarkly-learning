@@ -5,7 +5,7 @@
 // The React app reads the model config via a JSON flag; the actual AI SDK
 // (server-side) is shown in scripts/ai. Docs: home → AI Configs.
 import React, { useState } from 'react';
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
+import { useFlags, useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Value, Button, Badge } from '../components/ui';
 import { IS_OFFLINE } from '../lib/config';
 

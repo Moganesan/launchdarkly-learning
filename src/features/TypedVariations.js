@@ -1,73 +1,66 @@
-// The next-generation React SDK (@launchdarkly/react-sdk v4) ships typed,
-// single-flag hooks that re-render a component only when THAT flag changes.
-// This demo app runs on the stable v3 SDK, so here we (a) document the v4 API
-// and (b) provide equivalent lightweight typed wrappers over v3's useFlags so
-// you can use the same ergonomics today.
+// SDK → Features → typed variation hooks (v4 @launchdarkly/react-sdk).
+//
+// v4 ships typed, single-flag hooks that re-render a component ONLY when that
+// specific flag changes (better performance than useFlags, which re-renders on
+// any flag change). Each has a *Detail variant returning value + reason.
 import React from 'react';
-import { useFlags } from 'launchdarkly-react-client-sdk';
+import {
+  useBoolVariation,
+  useStringVariation,
+  useNumberVariation,
+  useJsonVariation,
+  useBoolVariationDetail,
+} from '@launchdarkly/react-sdk';
 import { Page, Panel, Value, Code } from '../components/ui';
 
-// --- Typed wrappers over v3 (drop-in ergonomics) ---------------------------
-function useBoolVariation(key, def) {
-  const v = useFlags()[key];
-  return typeof v === 'boolean' ? v : def;
-}
-function useStringVariation(key, def) {
-  const v = useFlags()[key];
-  return typeof v === 'string' ? v : def;
-}
-function useNumberVariation(key, def) {
-  const v = useFlags()[key];
-  return typeof v === 'number' ? v : def;
-}
-function useJsonVariation(key, def) {
-  const v = useFlags()[key];
-  return v && typeof v === 'object' ? v : def;
-}
-
 export default function TypedVariations() {
-  const showBanner = useBoolVariation('releaseBanner', false);
-  const theme = useStringVariation('themeColor', '#000');
-  const perPage = useNumberVariation('itemsPerPage', 10);
-  const config = useJsonVariation('checkoutConfig', {});
+  // These are the REAL v4 hooks. They take the stored (kebab-case) flag key.
+  const showBanner = useBoolVariation('release-banner', false);
+  const theme = useStringVariation('theme-color', '#000');
+  const perPage = useNumberVariation('items-per-page', 10);
+  const config = useJsonVariation('checkout-config', {});
+
+  // The *Detail variant also returns variationIndex + reason.
+  const bannerDetail = useBoolVariationDetail('release-banner', false);
 
   return (
     <Page
       title="Typed variations"
-      subtitle="Type-safe, single-flag hooks — the v4 React SDK API, with v3-compatible wrappers."
+      subtitle="Type-safe, single-flag hooks — the v4 React SDK API used for real on this page."
       docPath="sdk/client-side/react/react-web"
     >
-      <Panel title="Values via typed hooks">
+      <Panel title="Values via typed hooks (live)">
         <Value label="useBoolVariation('release-banner', false)" value={showBanner} />
         <Value label="useStringVariation('theme-color', '#000')" value={theme} />
         <Value label="useNumberVariation('items-per-page', 10)" value={perPage} />
         <Value label="useJsonVariation('checkout-config', {})" value={config} />
       </Panel>
 
-      <Panel title="v4 React SDK (@launchdarkly/react-sdk)" tone="ok">
-        <p>
-          The v4 package provides these hooks natively, plus{' '}
-          <code>*Detail</code> variants that also return{' '}
-          <code>variationIndex</code> and <code>reason</code>:
-        </p>
+      <Panel title="Detail hook — value + variationIndex + reason">
+        <Value label="value" value={bannerDetail.value} />
+        <Value label="variationIndex" value={bannerDetail.variationIndex} />
+        <Value label="reason" value={bannerDetail.reason} />
+      </Panel>
+
+      <Panel title="Why typed hooks" tone="ok">
         <Code>{`import {
   useBoolVariation, useStringVariation,
   useNumberVariation, useJsonVariation,
   useBoolVariationDetail,
 } from '@launchdarkly/react-sdk';
 
-const show   = useBoolVariation('show-new-feature', false);
-const theme  = useStringVariation('ui-theme', 'light');
-const max    = useNumberVariation('max-items', 10);
-const config = useJsonVariation('my-config', {});
+const show   = useBoolVariation('release-banner', false);
+const theme  = useStringVariation('theme-color', 'light');
+const max    = useNumberVariation('items-per-page', 10);
+const config = useJsonVariation('checkout-config', {});
 
 const { value, variationIndex, reason } =
-  useBoolVariationDetail('example-flag', false);`}</Code>
+  useBoolVariationDetail('release-banner', false);`}</Code>
         <p className="hint">
-          v4 sets up the provider with{' '}
-          <code>createLDReactProvider(clientSideID, context, options)</code> and
-          adds React Server Component support via{' '}
-          <code>@launchdarkly/react-sdk/server</code>.
+          Each hook subscribes to <em>one</em> flag, so a change to an unrelated
+          flag won't re-render this component. <code>useFlags()</code> still
+          exists (and is used elsewhere in this app) but is marked for removal in
+          a future major version — prefer these typed hooks in new code.
         </p>
       </Panel>
     </Page>

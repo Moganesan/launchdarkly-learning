@@ -10,8 +10,8 @@ React SDK to capture errors, performance, network, and full session replays —
 correlated with the flags a user was served.
 
 ```js
-import { asyncWithLDProvider } from 'launchdarkly-react-client-sdk';
-// v4 supports plugins in options; wire Observability + SessionReplay plugins,
+import { createLDReactProvider } from '@launchdarkly/react-sdk';
+// v4 supports plugins via ldOptions; wire Observability + SessionReplay plugins,
 // then flag-change and evaluation data annotates your traces automatically.
 ```
 

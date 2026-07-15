@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { buildLDProvider } from './lib/ldProvider';
+import { useInitializationStatus } from '@launchdarkly/react-sdk';
+import { LDProvider } from './lib/ldProvider';
+import { IS_OFFLINE } from './lib/config';
 import Layout from './components/Layout';
 
 import Home from './features/Home';
@@ -50,33 +52,32 @@ function AppRoutes() {
   );
 }
 
-export default function App() {
-  // The LD provider is created asynchronously (asyncWithLDProvider) so we can
-  // await a ready client before first render. We hold it in state.
-  const [LDProvider, setLDProvider] = useState(null);
-  const [error, setError] = useState(null);
+// Gates rendering on the SDK's initialization status. In v4 this is a hook
+// (useInitializationStatus) rather than awaiting the provider — the provider is
+// created synchronously and reports { status: 'initializing' | 'ready' | 'failed' }.
+function Gate() {
+  const { status, error } = useInitializationStatus();
 
-  useEffect(() => {
-    let mounted = true;
-    buildLDProvider()
-      .then((Provider) => mounted && setLDProvider(() => Provider))
-      .catch((e) => mounted && setError(e));
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  if (error) {
+  // In LIVE mode a failed init is worth surfacing loudly (bad key, network,
+  // etc.). In OFFLINE/mock mode we bootstrap known values, so a "failed" status
+  // just means the SDK couldn't reach LD — expected — so we render normally.
+  if (status === 'failed' && !IS_OFFLINE) {
     return (
       <div className="boot-screen boot-error">
         <h1>Failed to initialize LaunchDarkly</h1>
-        <pre>{String(error?.message || error)}</pre>
-        <p>The app still works in offline mode — clear REACT_APP_LD_CLIENT_ID to force it.</p>
+        <pre>{String(error?.message || error || 'unknown error')}</pre>
+        <p>
+          The app still works in offline mode — clear REACT_APP_LD_CLIENT_ID to
+          force it. Rendering with default/cached values below.
+        </p>
+        <AppRoutes />
       </div>
     );
   }
 
-  if (!LDProvider) {
+  // Still connecting (live mode only — offline resolves immediately to a
+  // terminal status via bootstrap).
+  if (status === 'initializing') {
     return (
       <div className="boot-screen">
         <div className="boot-spinner">🚀</div>
@@ -85,9 +86,14 @@ export default function App() {
     );
   }
 
+  // 'ready', or 'failed' while offline → render the app with bootstrap values.
+  return <AppRoutes />;
+}
+
+export default function App() {
   return (
     <LDProvider>
-      <AppRoutes />
+      <Gate />
     </LDProvider>
   );
 }

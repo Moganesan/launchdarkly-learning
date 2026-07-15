@@ -5,7 +5,7 @@
 // statistical significance. This page simulates the client side of that loop.
 // Docs: home → Experimentation.
 import React, { useState } from 'react';
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
+import { useFlags, useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Badge, Code, Button, Value } from '../components/ui';
 import { IS_OFFLINE } from '../lib/config';
 

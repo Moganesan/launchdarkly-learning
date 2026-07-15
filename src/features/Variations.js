@@ -1,30 +1,28 @@
 // SDK → Features → Flag variation evaluation.
 //
-// Shows the two ways to read flags in the React SDK:
+// Shows the two ways to read flags in the v4 React SDK:
 //   1. useFlags()  — a live object of all flags for the current context
-//   2. ldClient.variation(key, default) — imperative, matches other SDKs
+//   2. ldClient.boolVariation(key, default) etc. — imperative, TYPED methods
 // and covers all four value types: boolean, string, number, JSON.
 import React from 'react';
-import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
+import { useFlags, useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Value, Code } from '../components/ui';
-import { DEMO_FLAG_KEYS, OFFLINE_BOOTSTRAP } from '../lib/config';
 
 export default function Variations() {
   // useFlags returns camelCased keys by default (release-banner → releaseBanner).
   const flags = useFlags();
   const ldClient = useLDClient();
 
-  // The imperative API. variation(key, default) mirrors server-side SDKs.
-  // Note: with the React SDK the *hook* (useFlags) is the idiomatic path;
-  // variation() is shown here for parity with the docs' method list.
-  const imperativeBool =
-    ldClient?.variation(DEMO_FLAG_KEYS.releaseBanner, false) ??
-    OFFLINE_BOOTSTRAP.releaseBanner;
+  // Imperative TYPED methods. v4 dropped the generic variation() in favor of
+  // boolVariation / stringVariation / numberVariation / jsonVariation. These
+  // take the *stored* (kebab-case) flag key and a default. No context arg —
+  // the client already holds the identified context.
+  const imperativeBool = ldClient?.boolVariation('release-banner', false);
 
   return (
     <Page
       title="Flag variations"
-      subtitle="Evaluate every flag type with useFlags() and the imperative variation() API."
+      subtitle="Evaluate every flag type with useFlags() and the imperative typed variation methods."
       docPath="sdk/features/evaluating"
     >
       <Panel title="useFlags() — all types, live">
@@ -33,7 +31,7 @@ export default function Variations() {
         <Value label="items-per-page (number)" value={flags.itemsPerPage} />
         <Value label="checkout-config (JSON)" value={flags.checkoutConfig} />
         <Value label="beta-checkout (boolean)" value={flags.betaCheckout} />
-        <Code>{`import { useFlags } from 'launchdarkly-react-client-sdk';
+        <Code>{`import { useFlags } from '@launchdarkly/react-sdk';
 
 function Component() {
   const { releaseBanner, themeColor, itemsPerPage } = useFlags();
@@ -41,22 +39,23 @@ function Component() {
 }`}</Code>
       </Panel>
 
-      <Panel title="Imperative variation() API">
+      <Panel title="Imperative typed variation methods (v4)">
         <p>
-          Every SDK exposes typed variation methods. In the browser SDK the
-          generic <code>variation(key, default)</code> returns the current value:
+          v4 exposes <em>typed</em> methods on the client — the generic{' '}
+          <code>variation()</code> is gone. Each takes the stored flag key and a
+          default; there is no context argument (the client holds the context):
         </p>
-        <Value label="ldClient.variation('release-banner', false)" value={imperativeBool} />
+        <Value label="ldClient.boolVariation('release-banner', false)" value={imperativeBool} />
         <Code>{`const ldClient = useLDClient();
 
-// Generic — returns whatever type the flag serves:
-const show = ldClient.variation('release-banner', false);
+ldClient.boolVariation('release-banner', false);
+ldClient.stringVariation('theme-color', '#000');
+ldClient.numberVariation('items-per-page', 10);
+ldClient.jsonVariation('checkout-config', {});
 
-// Server-side SDKs additionally expose typed helpers:
-//   boolVariation(key, ctx, default)
-//   stringVariation(key, ctx, default)
-//   intVariation / doubleVariation(key, ctx, default)
-//   jsonVariation(key, ctx, default)`}</Code>
+// For value + reason, use the *VariationDetail variants:
+ldClient.boolVariationDetail('release-banner', false);
+// => { value, variationIndex, reason }`}</Code>
       </Panel>
 
       <Panel title="Live effect" tone="ok">

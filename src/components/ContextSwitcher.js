@@ -4,7 +4,7 @@
 // context and re-renders the whole app. This global switcher lets you flip
 // between preset contexts and watch flag values change everywhere.
 import React, { useState } from 'react';
-import { useLDClient } from 'launchdarkly-react-client-sdk';
+import { useLDClient } from '@launchdarkly/react-sdk';
 import { CONTEXT_PRESETS } from '../lib/contexts';
 import { IS_OFFLINE } from '../lib/config';
 

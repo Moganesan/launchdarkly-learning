@@ -5,7 +5,7 @@
 // redeploy. Docs: home → Release management / Progressive rollouts / Guarded
 // releases.
 import React from 'react';
-import { useFlags } from 'launchdarkly-react-client-sdk';
+import { useFlags } from '@launchdarkly/react-sdk';
 import { Page, Panel, Badge, Code } from '../components/ui';
 
 export default function ReleaseDemo() {

@@ -9,8 +9,9 @@ A runnable tour of the **entire** LaunchDarkly platform:
 - **Full documentation** in [`docs/`](./docs/) covering every platform feature,
   each linked back to the official docs.
 
-Built on `launchdarkly-react-client-sdk` (v3) + `@launchdarkly/node-server-sdk`
-(v9). Source of truth: <https://launchdarkly.com/docs/home>.
+Built on **`@launchdarkly/react-sdk` v4** (the current, GA, recommended React
+Web SDK) + `@launchdarkly/node-server-sdk` v9. Source of truth:
+<https://launchdarkly.com/docs/home>.
 
 ---
 
@@ -56,7 +57,7 @@ Now the app streams live: toggle a flag in your dashboard and watch it update in
 | `/variations` | `useFlags` / `variation` — all four value types |
 | `/details` | `variationDetail` — value + variationIndex + reason |
 | `/all-flags` | `allFlags` — full map, bootstrap export |
-| `/typed` | typed variation hooks (v4 API + v3 wrappers) |
+| `/typed` | typed single-flag hooks (`useBoolVariation` etc.) — v4 native |
 | `/contexts` | single / multi / anonymous contexts, `identify`, private attrs |
 | `/track` | `track` custom events + numeric metrics, `flush` |
 | `/streaming` | live `on('change')` subscriptions |
@@ -130,9 +131,11 @@ and provisioned by `seed.mjs`):
 
 ## Notes & caveats
 
-- The runnable app uses the **stable v3** React SDK; the **v4**
-  (`@launchdarkly/react-sdk`) API — `createLDReactProvider`, typed hooks, React
-  Server Components — is documented alongside each feature.
+- The runnable app uses the **current v4** React SDK (`@launchdarkly/react-sdk`):
+  synchronous `createLDReactProvider`, `useInitializationStatus`, typed hooks
+  (`useBoolVariation` etc.), and typed client methods. The deprecated v3 package
+  (`launchdarkly-react-client-sdk`) is referenced only for migration context —
+  see the v3→v4 cheat sheet in [`docs/react-sdk.md`](./docs/react-sdk.md).
 - Platform features that are dashboard/infra-only (SCIM, Data Export, Relay
   Proxy, Big Segment stores, guarded-rollout analysis) are documented and
   API-stubbed, not simulated end-to-end — those require account-level setup.

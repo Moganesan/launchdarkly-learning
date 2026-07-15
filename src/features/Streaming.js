@@ -4,7 +4,7 @@
 // from the server in real time; you can subscribe to a specific flag
 // ('change:my-flag') or to all changes ('change'). This page logs them live.
 import React, { useEffect, useState } from 'react';
-import { useLDClient } from 'launchdarkly-react-client-sdk';
+import { useLDClient } from '@launchdarkly/react-sdk';
 import { Page, Panel, Code, Badge } from '../components/ui';
 import { IS_OFFLINE } from '../lib/config';
 
@@ -75,14 +75,15 @@ ldClient.on('change', (settings) => {
 // A single flag:
 ldClient.on('change:release-banner', (current, previous) => { ... });
 
-// Enable/disable streaming explicitly:
-ldClient.setStreaming(true);   // open the SSE connection
-ldClient.setStreaming(false);  // fall back to polling / on-demand`}</Code>
+// You can also observe the connection itself:
+ldClient.on('dataSourceStatus', (status) => { /* streaming health */ });`}</Code>
         <p className="hint">
-          Streaming is configured at init with <code>streaming: true</code>. The
-          React SDK's <code>useFlags()</code> hook already re-renders on change —
-          the <code>on('change')</code> emitter is for imperative side effects
-          (analytics, cache busting, feature toggling outside React).
+          In v4 streaming is the default connection mode — there's no
+          <code> streaming: true</code> flag or runtime <code>setStreaming()</code>
+          toggle; connection behavior is controlled via the data system / identify
+          options. The React SDK's typed hooks and <code>useFlags()</code> already
+          re-render on change — the <code>on('change')</code> emitter is for
+          imperative side effects (analytics, cache busting, toggling outside React).
         </p>
       </Panel>
     </Page>
